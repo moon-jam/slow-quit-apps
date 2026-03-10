@@ -1,10 +1,10 @@
 #!/bin/bash
-# SlowQuitApps 构建脚本
-# 用于构建签名的 macOS .app 包
+# SlowQuitApps Build Script
+# Used to build a signed macOS .app bundle
 
 set -e
 
-# 配置
+# Configurations
 APP_NAME="SlowQuitApps"
 BUNDLE_ID="com.slowquitapps.app"
 VERSION="1.0.0"
@@ -12,39 +12,39 @@ BUILD_DIR=".build/release"
 APP_DIR="build/${APP_NAME}.app"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 
-# 颜色输出
+# Color outputs
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🔨 开始构建 ${APP_NAME}...${NC}"
+echo -e "${GREEN}🔨 Starting build for ${APP_NAME}...${NC}"
 
-# 1. 清理之前的构建
-echo -e "${YELLOW}📦 清理旧的构建产物...${NC}"
+# 1. Clean previous builds
+echo -e "${YELLOW}📦 Cleaning old build artifacts...${NC}"
 rm -rf build/
 mkdir -p build/
 
-# 2. Release 模式构建
-echo -e "${YELLOW}⚙️  编译 Release 版本...${NC}"
+# 2. Release build
+echo -e "${YELLOW}⚙️  Compiling Release version...${NC}"
 swift build -c release
 
-# 3. 创建 .app 目录结构
-echo -e "${YELLOW}📁 创建应用包结构...${NC}"
+# 3. Create .app directory structure
+echo -e "${YELLOW}📁 Creating app bundle structure...${NC}"
 mkdir -p "${APP_DIR}/Contents/MacOS"
 mkdir -p "${APP_DIR}/Contents/Resources"
 
-# 4. 复制可执行文件
+# 4. Copy executable
 cp "${BUILD_DIR}/${APP_NAME}" "${APP_DIR}/Contents/MacOS/"
 
-# 5. 创建 Info.plist（关键：正确配置 GUI 应用）
+# 5. Create Info.plist (Critical: properly configure GUI app)
 cat > "${APP_DIR}/Contents/Info.plist" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>CFBundleDevelopmentRegion</key>
-    <string>zh_CN</string>
+    <string>en</string>
     <key>CFBundleExecutable</key>
     <string>${APP_NAME}</string>
     <key>CFBundleIconFile</key>
@@ -74,82 +74,82 @@ cat > "${APP_DIR}/Contents/Info.plist" << EOF
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSAppleEventsUsageDescription</key>
-    <string>Slow Quit Apps 需要控制其他应用以实现延迟退出功能。</string>
+    <string>Slow Quit Apps needs to control other apps to implement the delayed quit feature.</string>
 </dict>
 </plist>
 EOF
 
-# 6. 创建 PkgInfo
+# 6. Create PkgInfo
 echo -n "APPL????" > "${APP_DIR}/Contents/PkgInfo"
 
-# 7. 如果存在图标，复制图标
+# 7. Copy icon if it exists
 if [ -f "BuildAssets/AppIcon.icns" ]; then
     cp "BuildAssets/AppIcon.icns" "${APP_DIR}/Contents/Resources/"
-    echo -e "${GREEN}✓ 已复制应用图标${NC}"
+    echo -e "${GREEN}✓ Copied app icon${NC}"
 fi
 
-# 8. Ad-hoc 签名（本地开发使用）
-echo -e "${YELLOW}🔐 进行 ad-hoc 签名...${NC}"
+# 8. Ad-hoc signature (for local development)
+echo -e "${YELLOW}🔐 Performing ad-hoc signature...${NC}"
 codesign --force --deep --sign - "${APP_DIR}"
 
-# 9. 验证签名
-echo -e "${YELLOW}🔍 验证签名...${NC}"
+# 9. Verify signature
+echo -e "${YELLOW}🔍 Verifying signature...${NC}"
 codesign --verify --verbose=2 "${APP_DIR}" 2>&1 || true
 
-# 10. 创建 DMG 安装包（可选）
+# 10. Create DMG package (optional)
 if command -v create-dmg &> /dev/null || command -v hdiutil &> /dev/null; then
-    echo -e "${YELLOW}📀 创建 DMG 安装包...${NC}"
+    echo -e "${YELLOW}📀 Creating DMG package...${NC}"
     
-    # 创建临时目录
+    # Create temp directory
     DMG_TEMP="build/dmg_temp"
     mkdir -p "${DMG_TEMP}"
     cp -R "${APP_DIR}" "${DMG_TEMP}/"
     
-    # 创建指向 Applications 的符号链接
+    # Create symlink to Applications
     ln -s /Applications "${DMG_TEMP}/Applications"
     
-    # 复制多语言安装文档
+    # Copy multilingual installation docs
     DOCS_DIR="BuildAssets/Docs"
     if [ -d "${DOCS_DIR}" ]; then
-        echo -e "${YELLOW}📖 复制安装文档...${NC}"
+        echo -e "${YELLOW}📖 Copying installation docs...${NC}"
         mkdir -p "${DMG_TEMP}/Documentation"
         cp "${DOCS_DIR}/README-en.md" "${DMG_TEMP}/Documentation/README (English).md" 2>/dev/null || true
         cp "${DOCS_DIR}/README-zh-CN.md" "${DMG_TEMP}/Documentation/安装指南 (中文).md" 2>/dev/null || true
         cp "${DOCS_DIR}/README-ja.md" "${DMG_TEMP}/Documentation/インストールガイド (日本語).md" 2>/dev/null || true
         cp "${DOCS_DIR}/README-ru.md" "${DMG_TEMP}/Documentation/Руководство (Русский).md" 2>/dev/null || true
-        echo -e "${GREEN}✓ 已复制多语言文档${NC}"
+        echo -e "${GREEN}✓ Copied multilingual docs${NC}"
     fi
     
-    # 使用 hdiutil 创建 DMG
+    # Use hdiutil to create DMG
     hdiutil create -volname "${APP_NAME}" \
         -srcfolder "${DMG_TEMP}" \
         -ov -format UDZO \
         "build/${DMG_NAME}"
     
-    # 清理临时目录
+    # Clean up temp directory
     rm -rf "${DMG_TEMP}"
     
-    echo -e "${GREEN}✓ DMG 已创建: build/${DMG_NAME}${NC}"
+    echo -e "${GREEN}✓ DMG created: build/${DMG_NAME}${NC}"
 fi
 
-# 11. 获取最终文件大小
+# 11. Get final file size
 SIZE=$(du -sh "${APP_DIR}" | cut -f1)
 
 echo ""
-echo -e "${GREEN}✅ 构建完成！${NC}"
-echo -e "   应用位置: ${APP_DIR}"
-echo -e "   应用大小: ${SIZE}"
+echo -e "${GREEN}✅ Build complete!${NC}"
+echo -e "   App location: ${APP_DIR}"
+echo -e "   App size: ${SIZE}"
 if [ -f "build/${DMG_NAME}" ]; then
     DMG_SIZE=$(du -sh "build/${DMG_NAME}" | cut -f1)
-    echo -e "   DMG 位置: build/${DMG_NAME}"
-    echo -e "   DMG 大小: ${DMG_SIZE}"
+    echo -e "   DMG location: build/${DMG_NAME}"
+    echo -e "   DMG size: ${DMG_SIZE}"
 fi
 echo ""
-echo -e "${YELLOW}💡 使用说明:${NC}"
-echo "   • 双击 ${APP_DIR} 或 DMG 安装后运行"
-echo "   • 首次运行需要授予辅助功能权限"
-echo "   • 应用会在菜单栏显示图标"
+echo -e "${YELLOW}💡 Instructions:${NC}"
+echo "   • Double-click ${APP_DIR} or install via DMG to run"
+echo "   • First run requires granting Accessibility permission"
+echo "   • App will show an icon in the menu bar"
 echo ""
 
-# 打开构建目录
+# Open build directory
 open build/

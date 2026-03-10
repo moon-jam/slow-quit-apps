@@ -1,23 +1,23 @@
 import SwiftUI
 
-/// 退出进度覆盖窗口视图
-/// 显示环形进度条和应用名称，使用 Liquid Glass 效果
+/// Quit Progress Overlay View
+/// Shows circular progress bar and app name, uses Liquid Glass effect
 struct QuitOverlayView: View {
-    /// 进度值 (0.0 - 1.0)
+    /// Progress value (0.0 - 1.0)
     let progress: Double
     
-    /// 应用名称
+    /// App name
     let appName: String
     
-    /// 是否显示动画
+    /// Whether to show animations
     let animated: Bool
     
     var body: some View {
         VStack(spacing: 16) {
-            // 环形进度条
+            // Circular progress ring
             progressRing
             
-            // 应用名称
+            // App name
             Text(appName)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -27,17 +27,17 @@ struct QuitOverlayView: View {
         .modifier(GlassBackgroundModifier())
     }
     
-    /// 环形进度条视图
+    /// Circular progress ring view
     private var progressRing: some View {
         ZStack {
-            // 背景圆环
+            // Background ring
             Circle()
                 .stroke(
                     Color.primary.opacity(0.15),
                     lineWidth: 5
                 )
             
-            // 进度圆环
+            // Progress ring
             Circle()
                 .trim(from: 0, to: progress)
                 .stroke(
@@ -47,7 +47,7 @@ struct QuitOverlayView: View {
                 .rotationEffect(.degrees(-90))
                 .animation(animated ? .easeOut(duration: 0.08) : .none, value: progress)
             
-            // 中心 Q 字符
+            // Center Q character
             Text("Q")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
@@ -55,7 +55,7 @@ struct QuitOverlayView: View {
         .frame(width: 56, height: 56)
     }
     
-    /// 进度条渐变色
+    /// Progress bar gradient
     private var progressGradient: AngularGradient {
         let colors: [Color] = switch progress {
         case ..<0.5:
@@ -75,17 +75,17 @@ struct QuitOverlayView: View {
     }
 }
 
-// MARK: - Liquid Glass 背景修饰器
+// MARK: - Liquid Glass Background Modifier
 
-/// 根据系统版本选择合适的玻璃效果
+/// Selects the appropriate glass effect based on the system version
 private struct GlassBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 26.0, *) {
-            // macOS 26+ 使用 Liquid Glass
+            // macOS 26+ uses Liquid Glass
             content
                 .glassEffect(.regular, in: .rect(cornerRadius: 20))
         } else {
-            // 低版本使用 Material 效果
+            // Lower versions use Material effect
             content
                 .background(
                     RoundedRectangle(cornerRadius: 20)

@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// Slow Quit Apps - 防止 Cmd+Q 误触的 macOS 工具
+// Slow Quit Apps - macOS utility to prevent accidental Cmd+Q presses
 
 import PackageDescription
 

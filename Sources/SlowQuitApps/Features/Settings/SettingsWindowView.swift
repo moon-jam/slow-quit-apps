@@ -1,24 +1,24 @@
 import SwiftUI
 
-/// 设置窗口主视图
-/// 使用 Apple 官方推荐的 TabView 设置模式，自动适配 Liquid Glass 效果
+/// Settings Window Main View
+/// Uses Apple's recommended TabView settings pattern, automatically adapts to Liquid Glass effect
 struct SettingsWindowView: View {
     @State private var i18n = I18n.shared
     
     var body: some View {
-        // 通过访问 currentLanguage 确保语言变化时视图刷新
+        // Access currentLanguage to ensure view refreshes when language changes
         let _ = i18n.currentLanguage
         
         settingsContent
             .scenePadding()
     }
     
-    // MARK: - 版本自适应 TabView
+    // MARK: - Version-adaptive TabView
     
     @ViewBuilder
     private var settingsContent: some View {
         if #available(macOS 15.0, *) {
-            // macOS 15+ 使用新 Tab API
+            // macOS 15+ uses new Tab API
             TabView {
                 Tab(t("settings.tabs.general"), systemImage: "gearshape") {
                     GeneralSettingsView()
@@ -36,7 +36,7 @@ struct SettingsWindowView: View {
                 }
             }
         } else {
-            // macOS 14 使用旧版 tabItem API
+            // macOS 14 uses legacy tabItem API
             TabView {
                 GeneralSettingsView()
                     .fixedSize()

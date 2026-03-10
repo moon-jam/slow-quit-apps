@@ -1,15 +1,15 @@
 import SwiftUI
 
-/// 关于页面视图
+/// About View
 struct AboutView: View {
     @State private var i18n = I18n.shared
     
     var body: some View {
-        // 通过访问 currentLanguage 确保语言变化时视图刷新
+        // Access currentLanguage to ensure view refreshes when language changes
         let _ = i18n.currentLanguage
         
         VStack(spacing: 20) {
-            // 应用图标
+            // App Icon
             Image(systemName: "hand.raised.circle.fill")
                 .font(.system(size: 64))
                 .foregroundStyle(.linearGradient(
@@ -18,7 +18,7 @@ struct AboutView: View {
                     endPoint: .bottomTrailing
                 ))
             
-            // 应用名称和版本
+            // App Name and Version
             VStack(spacing: 4) {
                 Text(t("app.name"))
                     .font(.title2)
@@ -29,7 +29,7 @@ struct AboutView: View {
                     .foregroundStyle(.secondary)
             }
             
-            // 应用描述
+            // App Description
             Text(t("app.description"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -38,7 +38,7 @@ struct AboutView: View {
             Divider()
                 .padding(.horizontal, 40)
             
-            // 功能说明
+            // Feature Descriptions
             VStack(alignment: .leading, spacing: 10) {
                 FeatureRow(icon: "keyboard", text: t("settings.about.features.monitor"))
                 FeatureRow(icon: "timer", text: t("settings.about.features.longPress"))
@@ -46,7 +46,7 @@ struct AboutView: View {
                 FeatureRow(icon: "gearshape", text: t("settings.about.features.customize"))
             }
             
-            // 版权信息
+            // Copyright Info
             Text(t("settings.about.copyright"))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
@@ -56,7 +56,7 @@ struct AboutView: View {
     }
 }
 
-/// 功能行
+/// Feature Row
 struct FeatureRow: View {
     let icon: String
     let text: String

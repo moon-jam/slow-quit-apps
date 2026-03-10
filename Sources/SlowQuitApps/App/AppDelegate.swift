@@ -1,60 +1,60 @@
 import Cocoa
 import SwiftUI
 
-/// 应用代理
-/// 管理应用生命周期和菜单栏图标
+/// App Delegate
+/// Manages app lifecycle and menu bar icon
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    /// 状态栏图标
+    /// Status bar icon
     private var statusItem: NSStatusItem?
     
-    /// 设置窗口
+    /// Settings window
     private var settingsWindow: NSWindow?
     
-    /// 应用状态
+    /// App State
     private let appState = AppState.shared
     
-    /// 权限检查定时器
+    /// Accessibility permission check timer
     private var accessibilityCheckTimer: Timer?
     
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 设置菜单栏图标
+        // Setup menu bar icon
         setupStatusItem()
         
-        // 隐藏 Dock 图标（作为菜单栏应用运行）
+        // Hide Dock icon (run as menu bar app)
         NSApp.setActivationPolicy(.accessory)
         
-        // 检查无障碍权限并启动监听
+        // Check accessibility permissions and start monitoring
         startMonitoringWithAccessibilityCheck()
         
-        print("✅ \(Constants.App.name) 已启动")
+        print("✅ \(Constants.App.name) started")
     }
     
     func applicationWillTerminate(_ notification: Notification) {
         accessibilityCheckTimer?.invalidate()
         QuitProgressController.shared.stop()
-        print("🛑 \(Constants.App.name) 已退出")
+        print("🛑 \(Constants.App.name) terminated")
     }
     
-    // MARK: - 无障碍权限检查
+    // MARK: - Accessibility Permission Check
     
-    /// 启动监听并检查权限
+    /// Start monitoring and check permissions
     private func startMonitoringWithAccessibilityCheck() {
         if AccessibilityManager.shared.isAccessibilityEnabled {
-            // 已有权限，直接启动
-            print("✅ 无障碍权限已授予")
+            // Permission granted, start directly
+            print("✅ Accessibility permission granted")
             QuitProgressController.shared.start()
         } else {
-            // 请求权限并开始轮询检查
-            print("⚠️ 请先授予无障碍权限，正在等待...")
+            // Request permission and start polling check
+            print("⚠️ Please grant accessibility permission, waiting...")
             AccessibilityManager.shared.requestAccessibility()
             startAccessibilityPolling()
         }
     }
     
-    /// 开始轮询检查权限状态
+    /// Start polling check for permission status
     private func startAccessibilityPolling() {
         accessibilityCheckTimer?.invalidate()
         accessibilityCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -63,31 +63,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if AccessibilityManager.shared.isAccessibilityEnabled {
                     self.accessibilityCheckTimer?.invalidate()
                     self.accessibilityCheckTimer = nil
-                    print("✅ 无障碍权限已授予，正在启动监听...")
+                    print("✅ Accessibility permission granted, starting monitoring...")
                     QuitProgressController.shared.start()
                 }
             }
         }
     }
     
-    // MARK: - 菜单栏图标
+    // MARK: - Menu Bar Icon
     
-    /// 设置状态栏图标
+    /// Setup status bar icon
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         guard let button = statusItem?.button else { return }
         
-        // 设置图标
+        // Setup icon
         button.image = NSImage(systemSymbolName: "hand.raised.fill", accessibilityDescription: "Slow Quit Apps")
         button.image?.size = NSSize(width: 18, height: 18)
         
-        // 创建菜单
+        // Create menu
         let menu = NSMenu()
         
-        // 启用/禁用
+        // Enable / Disable
         let enableItem = NSMenuItem(
-            title: appState.isEnabled ? "禁用" : "启用",
+            title: appState.isEnabled ? "Disable" : "Enable",
             action: #selector(toggleEnabled),
             keyEquivalent: ""
         )
@@ -96,9 +96,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         menu.addItem(.separator())
         
-        // 设置
+        // Settings
         let settingsItem = NSMenuItem(
-            title: "设置...",
+            title: "Settings...",
             action: #selector(openSettings),
             keyEquivalent: ","
         )
@@ -107,9 +107,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         menu.addItem(.separator())
         
-        // 退出
+        // Quit
         let quitItem = NSMenuItem(
-            title: "退出 \(Constants.App.name)",
+            title: "Quit \(Constants.App.name)",
             action: #selector(quitApp),
             keyEquivalent: "q"
         )
@@ -119,19 +119,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.menu = menu
     }
     
-    // MARK: - 菜单动作
+    // MARK: - Menu Actions
     
-    /// 切换启用状态
+    /// Toggle enable status
     @objc private func toggleEnabled() {
         appState.toggleEnabled()
-        // 更新菜单标题
+        // Update menu title
         if let menu = statusItem?.menu,
            let enableItem = menu.items.first {
-            enableItem.title = appState.isEnabled ? "禁用" : "启用"
+            enableItem.title = appState.isEnabled ? "Disable" : "Enable"
         }
     }
     
-    /// 打开设置窗口
+    /// Open settings window
     @objc private func openSettings() {
         if let window = settingsWindow {
             window.makeKeyAndOrderFront(nil)
@@ -139,12 +139,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         
-        // 创建设置窗口
+        // Create settings window
         let contentView = SettingsWindowView()
         let hostingController = NSHostingController(rootView: contentView)
         
         let window = NSWindow(contentViewController: hostingController)
-        window.title = "\(Constants.App.name) 设置"
+        window.title = "\(Constants.App.name) Settings"
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.setContentSize(NSSize(
             width: Constants.Window.settingsWidth,
@@ -152,7 +152,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ))
         window.center()
         
-        // 窗口关闭时清理引用
+        // Clean up reference when window closes
         window.isReleasedWhenClosed = false
         
         settingsWindow = window
@@ -160,7 +160,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    /// 退出应用
+    /// Quit app
     @objc private func quitApp() {
         NSApp.terminate(nil)
     }

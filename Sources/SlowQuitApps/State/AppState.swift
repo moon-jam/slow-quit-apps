@@ -1,44 +1,44 @@
 import SwiftUI
 
-/// 全局应用状态
-/// 单一数据源，使用 JSON 文件持久化
+/// Global Application State
+/// Single source of truth, persistent using JSON file
 @MainActor
 @Observable
 final class AppState {
     static let shared = AppState()
     
-    // MARK: - 配置属性
+    // MARK: - Configuration Properties
     
-    /// 是否启用长按退出功能
+    /// Enable require long press to quit function
     var isEnabled: Bool {
         didSet { saveConfig() }
     }
     
-    /// 长按持续时间（秒）
+    /// Hold duration (seconds)
     var holdDuration: Double {
         didSet { saveConfig() }
     }
     
-    /// 是否开机自启
+    /// Launch app at login
     var launchAtLogin: Bool {
         didSet {
-            // 调用系统 API 设置开机启动
+            // Call system API to set launch at login
             LaunchAtLoginManager.setEnabled(launchAtLogin)
             saveConfig()
         }
     }
     
-    /// 是否显示进度条动画
+    /// Show progress bar animation
     var showProgressAnimation: Bool {
         didSet { saveConfig() }
     }
     
-    /// 排除应用列表（不需要长按即可退出）
+    /// Excluded apps list (can quit directly without long press)
     var excludedApps: [ManagedApp] {
         didSet { saveConfig() }
     }
     
-    /// 当前语言
+    /// Current language
     var language: Language {
         didSet {
             I18n.shared.setLanguage(language)
@@ -46,34 +46,34 @@ final class AppState {
         }
     }
     
-    // MARK: - 运行时状态（不持久化）
+    // MARK: - Runtime State (Not Persistent)
     
-    /// 当前正在退出的进度（0.0 - 1.0）
+    /// Current quit progress (0.0 - 1.0)
     var quitProgress: Double = 0.0
     
-    /// 是否正在显示退出进度
+    /// Is currently showing quit progress
     var isShowingQuitProgress: Bool = false
     
-    /// 当前目标应用的 Bundle ID
+    /// Current target app's Bundle ID
     var targetAppBundleId: String?
     
-    // MARK: - 初始化
+    // MARK: - Initialization
     
     private init() {
         let config = ConfigManager.shared.load()
         self.isEnabled = config.isEnabled
         self.holdDuration = config.holdDuration
-        // 读取系统实际状态，而非配置文件
+        // Read actual system state, instead of config file
         self.launchAtLogin = LaunchAtLoginManager.isEnabled
         self.showProgressAnimation = config.showProgressAnimation
         self.excludedApps = config.excludedApps
         self.language = config.language
         
-        // 初始化时同步语言到 I18n 引擎
+        // Synchronize language to I18n engine upon init
         I18n.shared.setLanguage(config.language)
     }
     
-    // MARK: - 持久化
+    // MARK: - Persistence
     
     private func saveConfig() {
         let config = Config(
@@ -102,11 +102,11 @@ final class AppState {
     
     func addExcludedApp(_ app: ManagedApp) {
         guard !excludedApps.contains(where: { $0.bundleIdentifier == app.bundleIdentifier }) else {
-            print("⚠️ 应用已存在于列表中: \(app.bundleIdentifier)")
+            print("⚠️ App already exists in the list: \(app.bundleIdentifier)")
             return
         }
         excludedApps.append(app)
-        print("✅ 已添加应用: \(app.name)")
+        print("✅ Added app: \(app.name)")
     }
     
     func removeExcludedApp(_ app: ManagedApp) {
@@ -148,7 +148,7 @@ final class AppState {
         language = config.language
     }
     
-    // MARK: - 导入/导出
+    // MARK: - Import/Export
     
     func exportConfig(to url: URL) throws {
         try ConfigManager.shared.exportConfig(to: url)

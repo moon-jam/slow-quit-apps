@@ -1,6 +1,6 @@
 import Foundation
 
-/// 完整配置模型
+/// Complete Configuration Model
 struct Config: Codable, Sendable {
     var isEnabled: Bool = true
     var holdDuration: Double = 1.0
@@ -11,7 +11,7 @@ struct Config: Codable, Sendable {
     
     static let `default` = Config()
     
-    // 自定义解码，支持旧配置文件缺少字段的情况
+    // Custom decoding, supports case where old configuration files lack fields
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
@@ -39,25 +39,25 @@ struct Config: Codable, Sendable {
     }
 }
 
-/// JSON 配置文件管理器
+/// JSON Configuration File Manager
 final class ConfigManager: Sendable {
     static let shared = ConfigManager()
     
-    /// 配置文件路径
+    /// Configuration file path
     private let configURL: URL
     
     private init() {
-        // 配置文件保存在 ~/Library/Application Support/SlowQuitApps/config.json
+        // Configuration file saved in ~/Library/Application Support/SlowQuitApps/config.json
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let appFolder = appSupport.appendingPathComponent("SlowQuitApps", isDirectory: true)
         
-        // 确保目录存在
+        // Ensure directory exists
         try? FileManager.default.createDirectory(at: appFolder, withIntermediateDirectories: true)
         
         configURL = appFolder.appendingPathComponent("config.json")
     }
     
-    // MARK: - 加载/保存
+    // MARK: - Load/Save
     
     func load() -> Config {
         guard FileManager.default.fileExists(atPath: configURL.path) else {
@@ -68,7 +68,7 @@ final class ConfigManager: Sendable {
             let data = try Data(contentsOf: configURL)
             return try JSONDecoder().decode(Config.self, from: data)
         } catch {
-            print("⚠️ 加载配置失败: \(error)")
+            print("⚠️ Failed to load configuration: \(error)")
             return .default
         }
     }
@@ -80,11 +80,11 @@ final class ConfigManager: Sendable {
             let data = try encoder.encode(config)
             try data.write(to: configURL, options: .atomic)
         } catch {
-            print("❌ 保存配置失败: \(error)")
+            print("❌ Failed to save configuration: \(error)")
         }
     }
     
-    // MARK: - 导入/导出
+    // MARK: - Import/Export
     
     func exportConfig(to url: URL) throws {
         let config = load()

@@ -1,24 +1,24 @@
 import Foundation
 
-/// 应用配置模型
-/// 存储用户的所有偏好设置
+/// App Configuration Model
+/// Stores all user preferences
 struct AppConfig: Codable, Sendable {
-    /// 是否启用长按退出功能
+    /// Enable require long press to quit function
     var isEnabled: Bool
     
-    /// 长按持续时间（秒）
+    /// Hold duration (seconds)
     var holdDuration: Double
     
-    /// 是否在菜单栏显示图标
+    /// Show menu bar icon
     var showMenuBarIcon: Bool
     
-    /// 是否开机自启动
+    /// Launch app at login
     var launchAtLogin: Bool
     
-    /// 是否显示进度条动画
+    /// Show progress bar animation
     var showProgressAnimation: Bool
     
-    /// 默认配置
+    /// Default configuration
     static let `default` = AppConfig(
         isEnabled: true,
         holdDuration: 1.0,

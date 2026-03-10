@@ -1,18 +1,18 @@
 import SwiftUI
 
-/// 应用列表设置视图
-/// 管理排除列表（白名单）
+/// App List Settings View
+/// Manages exclusion list (whitelist)
 struct AppListSettingsView: View {
     @Bindable var appState = AppState.shared
     @State private var i18n = I18n.shared
     @State private var showingAppPicker = false
     
     var body: some View {
-        // 通过访问 currentLanguage 确保语言变化时视图刷新
+        // Access currentLanguage to ensure view refreshes when language changes
         let _ = i18n.currentLanguage
         
         VStack(spacing: 0) {
-            // 顶部说明
+            // Top Description
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(t("settings.appList.title"))
@@ -34,7 +34,7 @@ struct AppListSettingsView: View {
             
             Divider()
             
-            // 应用列表
+            // App List
             if appState.excludedApps.isEmpty {
                 emptyStateView
             } else {
@@ -63,7 +63,7 @@ struct AppListSettingsView: View {
         List {
             ForEach(appState.excludedApps) { app in
                 HStack(spacing: 12) {
-                    // 使用与 InstalledAppRow 相同的图标加载方式
+                    // Use same icon loading method as InstalledAppRow
                     if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: app.bundleIdentifier) {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
                             .resizable()
@@ -101,7 +101,7 @@ struct AppListSettingsView: View {
     }
 }
 
-// MARK: - 应用列表行
+// MARK: - App List Row
 
 struct AppListRow: View {
     let app: ManagedApp
@@ -133,7 +133,7 @@ struct AppListRow: View {
     }
 }
 
-// MARK: - 应用图标视图
+// MARK: - App Icon View
 
 struct AppIconView: View {
     let bundleIdentifier: String
@@ -150,7 +150,7 @@ struct AppIconView: View {
     }
 }
 
-// MARK: - 已安装应用选择器
+// MARK: - Installed App Picker
 
 struct InstalledAppPicker: View {
     let onSelect: (ManagedApp) -> Void
@@ -165,7 +165,7 @@ struct InstalledAppPicker: View {
         let _ = i18n.currentLanguage
         
         VStack(spacing: 0) {
-            // 标题栏
+            // Title Bar
             HStack {
                 Text(t("settings.appList.selectApp"))
                     .font(.headline)
@@ -174,7 +174,7 @@ struct InstalledAppPicker: View {
             }
             .padding()
             
-            // 搜索框
+            // Search Bar
             TextField(t("settings.appList.search"), text: $searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal)
@@ -182,7 +182,7 @@ struct InstalledAppPicker: View {
             Divider()
                 .padding(.top, 8)
             
-            // 应用列表
+            // App List
             if isLoading {
                 ProgressView(t("settings.appList.loading"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -223,11 +223,11 @@ struct InstalledAppPicker: View {
         onSelect(managedApp)
     }
     
-    /// 加载已安装应用
+    /// Load installed apps
     private func loadInstalledApps() {
         isLoading = true
         
-        // 在后台线程扫描应用
+        // Scan apps on background thread
         DispatchQueue.global(qos: .userInitiated).async {
             let appURLs = findInstalledApplications()
             
@@ -243,10 +243,10 @@ struct InstalledAppPicker: View {
                 apps.append(AppInfo(bundleIdentifier: bundleId, name: name, url: url))
             }
             
-            // 按名称排序
+            // Sort by name
             apps.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
             
-            // 主线程更新 UI
+            // Update UI on main thread
             DispatchQueue.main.async {
                 self.installedApps = apps
                 self.isLoading = false
@@ -255,9 +255,9 @@ struct InstalledAppPicker: View {
     }
 }
 
-// MARK: - 应用扫描工具
+// MARK: - App Scanning Tool
 
-/// 扫描已安装的应用（线程安全）
+/// Scan installed apps (Thread-safe)
 private func findInstalledApplications() -> [URL] {
     var urls: [URL] = []
     
@@ -286,7 +286,7 @@ private func findInstalledApplications() -> [URL] {
     return urls
 }
 
-// MARK: - 应用信息
+// MARK: - App Info
 
 struct AppInfo: Identifiable {
     let bundleIdentifier: String
@@ -296,7 +296,7 @@ struct AppInfo: Identifiable {
     var id: String { bundleIdentifier }
 }
 
-// MARK: - 已安装应用行
+// MARK: - Installed App Row
 
 struct InstalledAppRow: View {
     let app: AppInfo

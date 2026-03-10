@@ -1,33 +1,33 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// 通用设置视图
+/// General Settings View
 struct GeneralSettingsView: View {
     @Bindable var appState = AppState.shared
     
-    /// 用于响应语言变化触发 UI 刷新
+    /// Used to respond to language changes and trigger UI refresh
     @State private var i18n = I18n.shared
     
     @State private var showingExporter = false
     @State private var showingImporter = false
     @State private var importError: String?
     
-    /// 是否在有效的应用包环境中运行
+    /// Whether running in a valid app bundle environment
     private var isValidAppBundle: Bool {
         Bundle.main.bundleIdentifier != nil && Bundle.main.bundleURL.pathExtension == "app"
     }
     
     var body: some View {
-        // 通过访问 currentLanguage 确保语言变化时视图刷新
+        // Access currentLanguage to ensure view refreshes when language changes
         let _ = i18n.currentLanguage
         
         Form {
-            // 权限状态（置顶）
+            // Accessibility Status (Pinned)
             Section {
                 AccessibilityStatusRow()
             }
             
-            // 语言设置
+            // Language Settings
             Section {
                 Picker(t("settings.language.title"), selection: $appState.language) {
                     ForEach(Language.allCases, id: \.self) { lang in
@@ -36,7 +36,7 @@ struct GeneralSettingsView: View {
                 }
             }
             
-            // 功能开关
+            // Feature Toggles
             Section {
                 Toggle(t("settings.general.enableLongPress"), isOn: $appState.isEnabled)
                 
@@ -54,7 +54,7 @@ struct GeneralSettingsView: View {
                 Toggle(t("settings.general.showProgressAnimation"), isOn: $appState.showProgressAnimation)
             }
             
-            // 长按时间
+            // Hold Duration
             Section {
                 LabeledContent(t("settings.general.holdDuration")) {
                     Text(String(format: "%.1f \(t("settings.general.seconds"))", appState.holdDuration))
@@ -69,7 +69,7 @@ struct GeneralSettingsView: View {
                 )
             }
             
-            // 配置管理
+            // Configuration Management
             Section(t("settings.general.configManagement")) {
                 HStack {
                     Button(t("settings.general.export")) { showingExporter = true }
@@ -90,7 +90,7 @@ struct GeneralSettingsView: View {
             defaultFilename: "slow-quit-apps-config"
         ) { result in
             if case .failure(let error) = result {
-                print("导出失败: \(error)")
+                print("Export failed: \(error)")
             }
         }
         .fileImporter(
@@ -118,7 +118,7 @@ struct GeneralSettingsView: View {
     }
 }
 
-// MARK: - 配置文档（用于导出）
+// MARK: - Config Document (used for export)
 
 struct ConfigDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.json] }
@@ -126,7 +126,7 @@ struct ConfigDocument: FileDocument {
     init() {}
     
     init(configuration: ReadConfiguration) throws {
-        // 不需要从文件读取
+        // No need to read from file
     }
     
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
@@ -138,7 +138,7 @@ struct ConfigDocument: FileDocument {
     }
 }
 
-// MARK: - 无障碍权限状态
+// MARK: - Accessibility Permission Status
 
 struct AccessibilityStatusRow: View {
     @State private var isEnabled = AccessibilityManager.shared.isAccessibilityEnabled
@@ -178,7 +178,7 @@ struct AccessibilityStatusRow: View {
         }
     }
     
-    /// 重启应用
+    /// Restart application
     private func restartApplication() {
         guard let bundleURL = Bundle.main.bundleURL as URL? else { return }
         
@@ -188,7 +188,7 @@ struct AccessibilityStatusRow: View {
         
         try? task.run()
         
-        // 延迟退出当前实例
+        // Delay quitting current instance
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             NSApplication.shared.terminate(nil)
         }

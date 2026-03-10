@@ -1,25 +1,25 @@
 import Cocoa
 
-/// 退出进度控制器
-/// 核心逻辑：keyDown 开始计时，keyUp 停止计时，达到时间执行退出
+/// Quit Progress Controller
+/// Core logic: start timer on keyDown, stop timer on keyUp, trigger quit when duration is reached
 @MainActor
 final class QuitProgressController: KeyEventDelegate {
     static let shared = QuitProgressController()
     
-    /// 进度更新定时器
+    /// Progress Update Timer
     private var timer: Timer?
     
-    /// 按下开始时间
+    /// Start Time for Key Press
     private var startTime: Date?
     
-    /// 当前目标应用
+    /// Current Target App
     private var targetApp: NSRunningApplication?
     
-    /// 是否正在计时
+    /// Whether the timer is currently running
     private var isRunning = false
     
-    /// 安全超时阈值（秒）- 防止定时器泄漏
-    /// 如果超过 holdDuration + 此值没有收到 keyUp，强制停止
+    /// Safe timeout threshold (seconds) - prevents timer leak
+    /// If no keyUp is received after holdDuration + this value, force stop
     private let safetyTimeout: TimeInterval = 1.0
     
     private let appState = AppState.shared
@@ -27,7 +27,7 @@ final class QuitProgressController: KeyEventDelegate {
     
     private init() {}
     
-    // MARK: - 公开方法
+    // MARK: - Public Methods
     
     func start() {
         KeyEventMonitor.shared.delegate = self
@@ -42,11 +42,11 @@ final class QuitProgressController: KeyEventDelegate {
     // MARK: - KeyEventDelegate
     
     func keyEventMonitor(_ monitor: KeyEventMonitor, didReceiveKeyDown event: KeyEvent) {
-        // 已经在计时中，忽略重复的 keyDown（键盘重复）
+        // Already timing, ignore duplicate keyDown (keyboard repeat)
         guard !isRunning else { return }
         
         guard appState.isEnabled else {
-            // 禁用时直接退出
+            // Quit immediately if disabled
             NSWorkspace.shared.frontmostApplication?.terminate()
             return
         }
@@ -54,43 +54,43 @@ final class QuitProgressController: KeyEventDelegate {
         guard let app = NSWorkspace.shared.frontmostApplication,
               let bundleId = app.bundleIdentifier else { return }
         
-        // 调试：打印当前应用和排除状态
+        // Debug: Print current app and exclusion status
         let isExcluded = appState.isAppExcluded(bundleId)
-        print("🔍 检测到 Cmd+Q: \(app.localizedName ?? "未知") [\(bundleId)] 排除状态: \(isExcluded)")
-        print("📋 排除列表: \(appState.excludedApps.map { "\($0.bundleIdentifier):\($0.isExcluded)" })")
+        print("🔍 Detected Cmd+Q: \(app.localizedName ?? "Unknown") [\(bundleId)] Excluded: \(isExcluded)")
+        print("📋 Exclusion List: \(appState.excludedApps.map { "\($0.bundleIdentifier):\($0.isExcluded)" })")
         
-        // 白名单应用直接退出
+        // Whitelisted apps quit directly
         if isExcluded {
-            print("⚡ 直接退出（已排除）")
+            print("⚡ Direct quit (Excluded)")
             app.terminate()
             return
         }
         
-        print("⏱️ 开始计时...")
-        // 开始计时
+        print("⏱️ Starting timer...")
+        // Start timing
         startTimer(for: app)
     }
     
     func keyEventMonitor(_ monitor: KeyEventMonitor, didReceiveKeyUp event: KeyEvent) {
-        // keyUp 立即停止
+        // Stop immediately on keyUp
         stopTimer()
     }
     
-    // MARK: - 计时器
+    // MARK: - Timer
     
     private func startTimer(for app: NSRunningApplication) {
-        // 先清理可能遗留的定时器
+        // Clean up any remaining timer first
         stopTimer()
         
         isRunning = true
         startTime = Date()
         targetApp = app
         
-        let appName = app.localizedName ?? "未知应用"
+        let appName = app.localizedName ?? "Unknown App"
         overlayWindow.show(appName: appName)
         appState.startQuitProgress(for: app.bundleIdentifier ?? "")
         
-        // 60fps 更新进度
+        // Update progress at 60fps
         let newTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.tick()
@@ -101,7 +101,7 @@ final class QuitProgressController: KeyEventDelegate {
     }
     
     private func tick() {
-        // 安全检查：如果状态不一致，立即停止
+        // Safety check: if state is inconsistent, stop immediately
         guard isRunning,
               let start = startTime,
               let app = targetApp else {
@@ -109,7 +109,7 @@ final class QuitProgressController: KeyEventDelegate {
             return
         }
         
-        // 检查目标应用是否还在运行
+        // Check if target app is still running
         guard !app.isTerminated else {
             stopTimer()
             return
@@ -117,10 +117,10 @@ final class QuitProgressController: KeyEventDelegate {
         
         let elapsed = Date().timeIntervalSince(start)
         
-        // 安全超时检查：防止定时器泄漏
+        // Safety timeout check: prevent timer from leaking
         let maxDuration = appState.holdDuration + safetyTimeout
         if elapsed > maxDuration {
-            print("⚠️ 安全超时，强制停止计时器")
+            print("⚠️ Safety timeout, forcing timer to stop")
             stopTimer()
             return
         }
@@ -131,7 +131,7 @@ final class QuitProgressController: KeyEventDelegate {
         overlayWindow.updateProgress(progress)
         
         if progress >= 1.0 {
-            // 达到目标，执行退出
+            // Reached target duration, trigger quit
             let appToQuit = app
             stopTimer()
             appState.completeQuit()

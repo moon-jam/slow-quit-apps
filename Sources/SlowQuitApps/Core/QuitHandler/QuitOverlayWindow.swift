@@ -1,35 +1,35 @@
 import Cocoa
 import SwiftUI
 
-/// 退出进度覆盖窗口
-/// 浮动在屏幕中央显示退出进度
+/// Quit Progress Overlay Window
+/// Floats in the center of the screen to show quit progress
 @MainActor
 final class QuitOverlayWindow {
-    /// 单例实例
+    /// Singleton Instance
     static let shared = QuitOverlayWindow()
     
-    /// 窗口实例
+    /// Window Instance
     private var window: NSPanel?
     
-    /// 托管视图控制器
+    /// Hosting View Controller
     private var hostingController: NSHostingController<QuitOverlayView>?
     
-    /// 当前进度
+    /// Current Progress
     private var currentProgress: Double = 0
     
-    /// 当前应用名称
+    /// Current App Name
     private var currentAppName: String = ""
     
     private init() {}
     
-    // MARK: - 公开方法
+    // MARK: - Public Methods
     
-    /// 显示进度窗口
+    /// Show Progress Window
     func show(appName: String) {
         currentAppName = appName
         currentProgress = 0
         
-        // 创建或更新窗口
+        // Create or Update Window
         if window == nil {
             createWindow()
         }
@@ -38,29 +38,29 @@ final class QuitOverlayWindow {
         
         guard let window = window else { return }
         
-        // 定位到屏幕中央
+        // Center on screen
         centerWindow(window)
         
-        // 显示窗口
+        // Show window
         window.orderFrontRegardless()
         window.makeKeyAndOrderFront(nil)
     }
     
-    /// 更新进度
+    /// Update Progress
     func updateProgress(_ progress: Double) {
         currentProgress = progress
         updateView()
     }
     
-    /// 隐藏窗口
+    /// Hide Window
     func hide() {
         window?.orderOut(nil)
         currentProgress = 0
     }
     
-    // MARK: - 私有方法
+    // MARK: - Private Methods
     
-    /// 创建窗口
+    /// Create Window
     private func createWindow() {
         let panel = NSPanel(
             contentRect: NSRect(
@@ -73,7 +73,7 @@ final class QuitOverlayWindow {
             defer: false
         )
         
-        // 配置窗口属性
+        // Configure window properties
         panel.level = .floating
         panel.backgroundColor = .clear
         panel.isOpaque = false
@@ -81,7 +81,7 @@ final class QuitOverlayWindow {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = false
         
-        // 创建 SwiftUI 视图
+        // Create SwiftUI view
         let view = QuitOverlayView(
             progress: currentProgress,
             appName: currentAppName,
@@ -95,7 +95,7 @@ final class QuitOverlayWindow {
         self.hostingController = hostingController
     }
     
-    /// 更新视图
+    /// Update View
     private func updateView() {
         let view = QuitOverlayView(
             progress: currentProgress,
@@ -105,7 +105,7 @@ final class QuitOverlayWindow {
         hostingController?.rootView = view
     }
     
-    /// 将窗口居中到屏幕
+    /// Center window to screen
     private func centerWindow(_ window: NSWindow) {
         guard let screen = NSScreen.main else { return }
         let screenFrame = screen.visibleFrame

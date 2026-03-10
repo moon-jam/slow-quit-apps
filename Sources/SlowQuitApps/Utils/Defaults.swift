@@ -1,6 +1,6 @@
 import Foundation
 
-/// UserDefaults 键名定义
+/// UserDefaults Key Definition
 enum DefaultsKey: String {
     case isEnabled = "isEnabled"
     case holdDuration = "holdDuration"
@@ -10,11 +10,11 @@ enum DefaultsKey: String {
     case excludedApps = "excludedApps"
 }
 
-/// UserDefaults 存储管理器
-/// 提供类型安全的配置读写
+/// UserDefaults Storage Manager
+/// Provides type-safe configuration reading and writing
 @MainActor
 final class Defaults {
-    /// 单例实例
+    /// Singleton Instance
     static let shared = Defaults()
     
     private let defaults = UserDefaults.standard
@@ -23,9 +23,9 @@ final class Defaults {
     
     private init() {}
     
-    // MARK: - 基础类型读写
+    // MARK: - Basic Type Read/Write
     
-    /// 读取布尔值
+    /// Read Boolean value
     func bool(for key: DefaultsKey, default defaultValue: Bool = false) -> Bool {
         guard defaults.object(forKey: key.rawValue) != nil else {
             return defaultValue
@@ -33,12 +33,12 @@ final class Defaults {
         return defaults.bool(forKey: key.rawValue)
     }
     
-    /// 写入布尔值
+    /// Write Boolean value
     func set(_ value: Bool, for key: DefaultsKey) {
         defaults.set(value, forKey: key.rawValue)
     }
     
-    /// 读取浮点数
+    /// Read Double value
     func double(for key: DefaultsKey, default defaultValue: Double = 0) -> Double {
         guard defaults.object(forKey: key.rawValue) != nil else {
             return defaultValue
@@ -46,14 +46,14 @@ final class Defaults {
         return defaults.double(forKey: key.rawValue)
     }
     
-    /// 写入浮点数
+    /// Write Double value
     func set(_ value: Double, for key: DefaultsKey) {
         defaults.set(value, forKey: key.rawValue)
     }
     
-    // MARK: - Codable 对象读写
+    // MARK: - Codable Object Read/Write
     
-    /// 读取可编码对象
+    /// Read Encodable object
     func object<T: Decodable>(for key: DefaultsKey, type: T.Type) -> T? {
         guard let data = defaults.data(forKey: key.rawValue) else {
             return nil
@@ -61,7 +61,7 @@ final class Defaults {
         return try? decoder.decode(type, from: data)
     }
     
-    /// 写入可编码对象
+    /// Write Encodable object
     func set<T: Encodable>(_ value: T, for key: DefaultsKey) {
         guard let data = try? encoder.encode(value) else {
             return
@@ -69,9 +69,9 @@ final class Defaults {
         defaults.set(data, forKey: key.rawValue)
     }
     
-    // MARK: - 便捷方法
+    // MARK: - Convenience Methods
     
-    /// 加载完整配置
+    /// Load full configuration
     func loadConfig() -> AppConfig {
         AppConfig(
             isEnabled: bool(for: .isEnabled, default: true),
@@ -82,7 +82,7 @@ final class Defaults {
         )
     }
     
-    /// 保存完整配置
+    /// Save full configuration
     func saveConfig(_ config: AppConfig) {
         set(config.isEnabled, for: .isEnabled)
         set(config.holdDuration, for: .holdDuration)
@@ -91,12 +91,12 @@ final class Defaults {
         set(config.showProgressAnimation, for: .showProgressAnimation)
     }
     
-    /// 加载排除应用列表
+    /// Load excluded apps list
     func loadExcludedApps() -> [ManagedApp] {
         object(for: .excludedApps, type: [ManagedApp].self) ?? ManagedApp.systemDefaults
     }
     
-    /// 保存排除应用列表
+    /// Save excluded apps list
     func saveExcludedApps(_ apps: [ManagedApp]) {
         set(apps, for: .excludedApps)
     }
