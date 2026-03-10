@@ -1,0 +1,58 @@
+{
+    "app": {
+        "name": "Slow Quit Apps",
+        "description": "防止意外按下 ⌘Q 導致應用程式退出的小工具"
+    },
+    "settings": {
+        "tabs": {
+            "general": "一般",
+            "appList": "應用程式列表",
+            "about": "關於"
+        },
+        "general": {
+            "accessibilityStatus": "輔助使用狀態",
+            "enableLongPress": "啟用長按退出",
+            "launchAtLogin": "開機自動啟動",
+            "launchAtLoginDisabled": "需要建置為 .app 檔案包後才能使用",
+            "showProgressAnimation": "顯示進度動畫",
+            "holdDuration": "長按時間",
+            "seconds": "秒",
+            "configManagement": "設定管理",
+            "export": "匯出",
+            "import": "匯入",
+            "resetDefaults": "還原預設值",
+            "importFailed": "匯入失敗",
+            "ok": "確定"
+        },
+        "language": {
+            "title": "語言"
+        },
+        "appList": {
+            "title": "排除列表",
+            "description": "以下應用程式無需長按即可直接退出",
+            "add": "新增",
+            "empty": "暫無排除的應用程式",
+            "emptyDescription": "點選「新增」按鈕來加入應用程式",
+            "selectApp": "選擇應用程式",
+            "cancel": "取消",
+            "search": "搜尋應用程式...",
+            "loading": "正在載入應用程式列表..."
+        },
+        "about": {
+            "version": "版本",
+            "features": {
+                "monitor": "監聽 ⌘Q 快速鍵",
+                "longPress": "需要長按才能退出應用程式",
+                "whitelist": "支援應用程式白名單",
+                "customize": "自訂長按時間"
+            },
+            "copyright": "© 2025 Slow Quit Apps"
+        }
+    },
+    "accessibility": {
+        "granted": "權限已授予",
+        "notGranted": "需要授權",
+        "openSettings": "開啟系統設定",
+        "restartApp": "重啟應用程式"
+    }
+}
