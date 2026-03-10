@@ -157,7 +157,9 @@ final class AppState {
     func importConfig(from url: URL) throws {
         let config = try ConfigManager.shared.importConfig(from: url)
         isEnabled = config.isEnabled
-        holdDuration = config.holdDuration
+        // Clamp holdDuration to valid range to prevent malicious config files from setting extreme values
+        holdDuration = max(Constants.Progress.minHoldDuration,
+                           min(config.holdDuration, Constants.Progress.maxHoldDuration))
         launchAtLogin = config.launchAtLogin
         showProgressAnimation = config.showProgressAnimation
         excludedApps = config.excludedApps
