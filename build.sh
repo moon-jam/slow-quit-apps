@@ -89,8 +89,9 @@ if [ -f "BuildAssets/AppIcon.icns" ]; then
 fi
 
 # 8. Ad-hoc signature (for local development)
-echo -e "${YELLOW}🔐 Performing ad-hoc signature...${NC}"
-codesign --force --deep --sign - "${APP_DIR}"
+# --options=runtime enables Hardened Runtime, which blocks dylib injection via DYLD_INSERT_LIBRARIES
+echo -e "${YELLOW}🔐 Performing ad-hoc signature (Hardened Runtime enabled)...${NC}"
+codesign --force --deep --sign - --options=runtime "${APP_DIR}"
 
 # 9. Verify signature
 echo -e "${YELLOW}🔍 Verifying signature...${NC}"
