@@ -26,8 +26,16 @@ struct KeyEvent: Sendable {
     }
     
     /// Whether Command + Q combination is pressed down
+    /// Strictly checks that ONLY Command is held — Cmd+Shift+Q, Cmd+Option+Q, etc. will NOT trigger this
     var isCmdQDown: Bool {
-        type == .keyDown && isQKey && hasCommandModifier
+        guard type == .keyDown && isQKey else { return false }
+        // Mask of all significant modifier keys
+        let significantModifiers = NSEvent.ModifierFlags.command.rawValue
+            | NSEvent.ModifierFlags.shift.rawValue
+            | NSEvent.ModifierFlags.option.rawValue
+            | NSEvent.ModifierFlags.control.rawValue
+        // Only trigger when Command is the sole significant modifier (Cmd+Q exactly)
+        return (modifiers & significantModifiers) == NSEvent.ModifierFlags.command.rawValue
     }
 }
 
